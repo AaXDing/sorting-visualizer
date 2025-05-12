@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { bubbleSortSteps } from '../algorithms/bubbleSort';
+import { mergeSortSteps } from '../algorithms/mergeSort';
 
-interface Bar {
+export interface Bar {
   value: number;
   color: string; // Now a hex color code
 }
@@ -44,26 +46,13 @@ const SortingVisualizer: React.FC<SortingVisualizerProps> = ({
   }, [generateNewArray]);
 
   const bubbleSort = useCallback(() => {
-    const steps: Bar[][] = [];
-    const arr = [...array];
-    
-    for (let i = 0; i < arr.length - 1; i++) {
-      for (let j = 0; j < arr.length - i - 1; j++) {
-        // Create a copy of the current state
-        const currentState = arr.map((bar, index) => ({
-          ...bar,
-          color: index === j || index === j + 1 ? COLOR_COMPARE : COLOR_DEFAULT,
-        }));
-        steps.push(currentState);
+    const steps = bubbleSortSteps(array, COLOR_DEFAULT, COLOR_COMPARE, COLOR_SORTED);
+    setSortingSteps(steps);
+    setIsSorting(true);
+  }, [array]);
 
-        if (arr[j].value > arr[j + 1].value) {
-          [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
-        }
-      }
-    }
-
-    // Add final sorted state
-    steps.push(arr.map(bar => ({ ...bar, color: COLOR_SORTED })));
+  const mergeSort = useCallback(() => {
+    const steps = mergeSortSteps(array, COLOR_DEFAULT, COLOR_COMPARE, COLOR_SORTED);
     setSortingSteps(steps);
     setIsSorting(true);
   }, [array]);
@@ -86,11 +75,13 @@ const SortingVisualizer: React.FC<SortingVisualizerProps> = ({
       case 'bubble':
         bubbleSort();
         break;
+      case 'merge':
+        mergeSort();
+        break;
       // Add other sorting algorithms here as they are implemented
       default:
         bubbleSort();
     }
-
   };
 
   useEffect(() => {
