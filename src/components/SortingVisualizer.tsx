@@ -22,6 +22,75 @@ const COLOR_DEFAULT = '#3b82f6'; // blue-500
 const COLOR_COMPARE = '#ef4444'; // red-500
 const COLOR_SORTED = '#22c55e'; // green-500
 
+// Pseudo code mapping for each algorithm
+const PSEUDO_CODE: Record<SortingAlgorithm, string[]> = {
+  bubble: [
+    'for i from 0 to n-1',
+    '    for j from 0 to n-i-2',
+    '        if arr[j] > arr[j+1]',
+    '            swap arr[j] and arr[j+1]'
+  ],
+  selection: [
+    'for i from 0 to n-1',
+    '    minIndex = i',
+    '    for j from i+1 to n-1',
+    '        if arr[j] < arr[minIndex]',
+    '            minIndex = j',
+    '    swap arr[i] and arr[minIndex]'
+  ],
+  insertion: [
+    'for i from 1 to n-1',
+    '    j = i',
+    '    while j > 0 and arr[j-1] > arr[j]',
+    '        swap arr[j] and arr[j-1]',
+    '        j = j - 1'
+  ],
+  quick: [
+    'function quickSort(arr, start, end):',
+    '    if start >= end: return',
+    '    pivotIndex = partition(arr, start, end)',
+    '    quickSort(arr, start, pivotIndex-1)',
+    '    quickSort(arr, pivotIndex+1, end)',
+    '',
+    'function partition(arr, start, end):',
+    '    pivot = arr[end]',
+    '    i = start',
+    '    for j from start to end-1:',
+    '        if arr[j] < pivot:',
+    '            swap arr[i] and arr[j]',
+    '            i = i + 1',
+    '    swap arr[i] and arr[end]',
+    '    return i'
+  ],
+  merge: [
+    'function mergeSort(arr, start, end):',
+    '    if end - start <= 1: return',
+    '    mid = (start + end) // 2',
+    '    mergeSort(arr, start, mid)',
+    '    mergeSort(arr, mid, end)',
+    '    merge(arr, start, mid, end)',
+    '',
+    'function merge(arr, start, mid, end):',
+    '    left = arr[start:mid]',
+    '    right = arr[mid:end]',
+    '    i = start, l = 0, r = 0',
+    '    while l < len(left) and r < len(right):',
+    '        if left[l] <= right[r]:',
+    '            arr[i] = left[l]',
+    '            l += 1',
+    '        else:',
+    '            arr[i] = right[r]',
+    '            r += 1',
+    '        i += 1',
+    '    while l < len(left):',
+    '        arr[i] = left[l]',
+    '        l += 1; i += 1',
+    '    while r < len(right):',
+    '        arr[i] = right[r]',
+    '        r += 1; i += 1'
+  ]
+};
+
 const SortingVisualizer: React.FC<SortingVisualizerProps> = ({
   arraySize = 20,
   minValue = 5,
@@ -32,15 +101,15 @@ const SortingVisualizer: React.FC<SortingVisualizerProps> = ({
   const [isPaused, setIsPaused] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [sortingSteps, setSortingSteps] = useState<Bar[][]>([]);
+  const [lineSteps, setLineSteps] = useState<number[]>([]);
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<SortingAlgorithm>('bubble');
 
   const generateNewArray = useCallback(() => {
-    // Stop any ongoing sorting
     setIsSorting(false);
     setIsPaused(false);
     setCurrentStep(0);
     setSortingSteps([]);
-    
+    setLineSteps([]);
     const newArray: Bar[] = Array.from({ length: arraySize }, () => ({
       value: Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue,
       color: COLOR_DEFAULT,
@@ -54,7 +123,8 @@ const SortingVisualizer: React.FC<SortingVisualizerProps> = ({
 
   const bubbleSort = useCallback(() => {
     const steps = bubbleSortSteps(array, COLOR_DEFAULT, COLOR_COMPARE, COLOR_SORTED);
-    setSortingSteps(steps);
+    setSortingSteps(steps.map(s => s.bars));
+    setLineSteps(steps.map(s => s.line));
     setIsSorting(true);
   }, [array]);
 
@@ -129,8 +199,26 @@ const SortingVisualizer: React.FC<SortingVisualizerProps> = ({
     }
   }, [isSorting, isPaused, currentStep, sortingSteps]);
 
+  const currentLine = selectedAlgorithm === 'bubble' && lineSteps.length > 0 ? lineSteps[currentStep] : null;
+
   return (
     <div className="flex flex-col items-center gap-4 p-4">
+      {/* Pseudo code display */}
+      <div className="w-full max-w-4xl mb-4">
+        <div className="bg-gray-900 text-white rounded-lg p-4 font-mono text-sm overflow-x-auto shadow">
+          <div className="mb-2 font-bold text-blue-300">{selectedAlgorithm.charAt(0).toUpperCase() + selectedAlgorithm.slice(1)} Sort Pseudo Code</div>
+          <pre className="whitespace-pre-wrap">
+            {PSEUDO_CODE[selectedAlgorithm].map((line, idx) => (
+              <div
+                key={idx}
+                className={selectedAlgorithm === 'bubble' && idx === currentLine ? 'bg-yellow-400 text-gray-900 rounded px-1' : ''}
+              >
+                {line}
+              </div>
+            ))}
+          </pre>
+        </div>
+      </div>
       {/* Debug output */}
       {/* <div className="text-xs text-gray-500 mb-2">Array length: {array.length} | Values: [{array.map(bar => bar.value).join(', ')}]</div> */}
       <div className="flex gap-2 mb-4">
