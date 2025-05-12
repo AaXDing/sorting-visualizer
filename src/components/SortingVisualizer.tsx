@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { bubbleSortSteps } from '../algorithms/bubbleSort';
 import { mergeSortSteps } from '../algorithms/mergeSort';
+import { selectionSortSteps } from '../algorithms/selectionSort';
+import { insertionSortSteps } from '../algorithms/insertionSort';
+import { quickSortSteps } from '../algorithms/quickSort';
 
 export interface Bar {
   value: number;
@@ -57,6 +60,24 @@ const SortingVisualizer: React.FC<SortingVisualizerProps> = ({
     setIsSorting(true);
   }, [array]);
 
+  const selectionSort = useCallback(() => {
+    const steps = selectionSortSteps(array, COLOR_DEFAULT, COLOR_COMPARE, COLOR_SORTED);
+    setSortingSteps(steps);
+    setIsSorting(true);
+  }, [array]);
+
+  const insertionSort = useCallback(() => {
+    const steps = insertionSortSteps(array, COLOR_DEFAULT, COLOR_COMPARE, COLOR_SORTED);
+    setSortingSteps(steps);
+    setIsSorting(true);
+  }, [array]);
+
+  const quickSort = useCallback(() => {
+    const steps = quickSortSteps(array, COLOR_DEFAULT, COLOR_COMPARE, COLOR_SORTED);
+    setSortingSteps(steps);
+    setIsSorting(true);
+  }, [array]);
+
   const handleNextStep = () => {
     if (currentStep < sortingSteps.length - 1) {
       setCurrentStep(prev => prev + 1);
@@ -75,10 +96,18 @@ const SortingVisualizer: React.FC<SortingVisualizerProps> = ({
       case 'bubble':
         bubbleSort();
         break;
+      case 'selection':
+        selectionSort();
+        break;
+      case 'insertion':
+        insertionSort();
+        break;
+      case 'quick':
+        quickSort();
+        break;
       case 'merge':
         mergeSort();
         break;
-      // Add other sorting algorithms here as they are implemented
       default:
         bubbleSort();
     }
