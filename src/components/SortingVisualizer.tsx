@@ -23,7 +23,7 @@ const COLOR_COMPARE = '#ef4444'; // red-500
 const COLOR_SORTED = '#22c55e'; // green-500
 
 const SortingVisualizer: React.FC<SortingVisualizerProps> = ({
-  arraySize = 50,
+  arraySize = 20,
   minValue = 5,
   maxValue = 100,
 }) => {
@@ -35,13 +35,17 @@ const SortingVisualizer: React.FC<SortingVisualizerProps> = ({
   const [selectedAlgorithm, setSelectedAlgorithm] = useState<SortingAlgorithm>('bubble');
 
   const generateNewArray = useCallback(() => {
+    // Stop any ongoing sorting
+    setIsSorting(false);
+    setIsPaused(false);
+    setCurrentStep(0);
+    setSortingSteps([]);
+    
     const newArray: Bar[] = Array.from({ length: arraySize }, () => ({
       value: Math.floor(Math.random() * (maxValue - minValue + 1)) + minValue,
       color: COLOR_DEFAULT,
     }));
     setArray(newArray);
-    setCurrentStep(0);
-    setSortingSteps([]);
   }, [arraySize, maxValue, minValue]);
 
   useEffect(() => {
@@ -128,19 +132,18 @@ const SortingVisualizer: React.FC<SortingVisualizerProps> = ({
   return (
     <div className="flex flex-col items-center gap-4 p-4">
       {/* Debug output */}
-      <div className="text-xs text-gray-500 mb-2">Array length: {array.length} | Values: [{array.map(bar => bar.value).join(', ')}]</div>
+      {/* <div className="text-xs text-gray-500 mb-2">Array length: {array.length} | Values: [{array.map(bar => bar.value).join(', ')}]</div> */}
       <div className="flex gap-2 mb-4">
         <button
           onClick={generateNewArray}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          disabled={isSorting}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
         >
           Generate New Array
         </button>
         <select
           value={selectedAlgorithm}
           onChange={(e) => setSelectedAlgorithm(e.target.value as SortingAlgorithm)}
-          className="px-4 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 border-0 shadow-sm transition-colors duration-150"
+          className="px-4 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 border-0 shadow-sm transition-colors duration-150 disabled:bg-gray-400 disabled:cursor-not-allowed"
           disabled={isSorting}
         >
           <option value="bubble">Bubble Sort</option>
@@ -163,7 +166,7 @@ const SortingVisualizer: React.FC<SortingVisualizerProps> = ({
         </button>
         <button
           onClick={handleNextStep}
-          className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
+          className="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600 disabled:bg-gray-400 disabled:cursor-not-allowed"
           disabled={!isSorting || !isPaused}
         >
           Next Step
